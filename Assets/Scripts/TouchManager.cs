@@ -6,63 +6,52 @@ using UnityEngine.SceneManagement;
 public class TouchManager : MonoBehaviour
 {
     enum Gestures { none, determining, tap, drag, rotation, zoom, scale };
-    Gestures currentGesture = Gestures.none;
+    Gestures current_gesture = Gestures.none;
 
-    Vector3 startPos;
-    Vector3 endPos;
-    float touchZoomSpeed = 0.1f;
-    float zoomMinBound = 0.1f;
-    float zoomMaxBound = 179.9f;
-    float rotationRate = 3.0f;
+    Vector3 start_pos;
+    Vector3 end_pos;
+    Vector3 initial_scale;
+
     Vector2 t1;
     Vector2 t2;
 
-    IControllable selectedObject;
-    private float startingDistanceToSelectedObject;
+    IController selected_item;
+    IController object_hit;
 
-    IControllable objectHit;
-    Renderer planeRenderer;
-    float initialDistance;
+    Renderer rend;
+    
     Touch touch;
-    float timeTouchBegan = 0f;
-    float tapTimeThreshold = 0.5f;
-    private bool hasMoved;
+    
+    Quaternion initial_rotation;
 
-    Quaternion initialRotation;
-    Vector3 initialScale;
-    float initialAngle;
+    private const float delta_change_threshold = 10f;
+    private const float rotation_threshold = 0.1f;
+    private float starting_distance_to_selected_object;
+    private float start_distance;
+    private float current_angle;
+    private float current_delta_change;
+    private float zoom_min_bound = 0.1f;
+    private float zoom_max_bound = 179.9f;
+    private float rotation_rate = 3.0f;
+    private float time_of_touch = 0f;
+    private float tap_time_threshold = 0.5f;
+    private float initial_angle;
 
-    private const float deltaChangeThreshold = 10f;
-    private const float rotationThreshold = 0.1f;
-    private float currentAngle;
-    private float currentDeltaChange;
+    private bool has_moved;
 
     // Start is called before the first frame update
     void Start()
     {
-        GameObject ourCameraPlane = GameObject.CreatePrimitive(PrimitiveType.Plane);
-        planeRenderer = ourCameraPlane.GetComponent<Renderer>();
-        planeRenderer.material.SetColor("_Color", Color.red);
-        Destroy(planeRenderer);
-
-        ourCameraPlane.transform.position = new Vector3(0, Camera.main.transform.position.y, 0);
-        ourCameraPlane.transform.up = (Camera.main.transform.position - ourCameraPlane.transform.position).normalized;
-
-        initialRotation = Quaternion.identity;
-        initialScale = Vector3.one;
-        initialAngle = 0f;
-        initialDistance = 0;
-        currentAngle = 0f;
-        currentDeltaChange = 0f;
+        
     }
 
     // Update is called once per frame
     void Update()
     {
-        currentGesture = determineGesture();
-        print("Current gesture" + currentGesture);
+        current_gesture = Determine_Gesture();
+        print("Current gesture: " + current_gesture);
 
-        switch (currentGesture)
+        switch (current_gesture)
         {
             case Gestures.none:
 
@@ -73,7 +62,6 @@ public class TouchManager : MonoBehaviour
                 break;
 
             case Gestures.tap:
-                //  print("Its a tap!");
                 RaycastHit info;
                 Ray ray;
                 ray = Camera.main.ScreenPointToRay(Input.touches[0].position);
@@ -82,57 +70,55 @@ public class TouchManager : MonoBehaviour
 
                 if (Physics.Raycast(ray, out info))
                 {
-                    objectHit = info.transform.GetComponent<IControllable>();
+                    object_hit = info.transform.GetComponent<IController>();
 
-                    if (objectHit != null)
+                    if (object_hit != null)
                     {
-                        objectHit.youveBeenTouched();
-                        selectedObject = objectHit;
-                        startingDistanceToSelectedObject = Vector3.Distance(Camera.main.transform.position, info.transform.position);
-                        selectedObject.objectSelected();
+                        selected_item = object_hit;
+                        if (selected_item.Get_Selected() == false)
+                        {
+                            starting_distance_to_selected_object = Vector3.Distance(Camera.main.transform.position, info.transform.position);
+                            selected_item.Selected();
+                        }
+                        if (selected_item.Get_Selected() == true)
+                        {
+                            //selected_item.Deselected();
+                            //starting_distance_to_selected_object = 0;
+                        }
                     }
 
                     else
                     {
-                        if (selectedObject != null)
+                        if (selected_item != null)
                         {
-                            selectedObject.objectDeselected();
+                            selected_item.Deselected();
                         }
 
-                        selectedObject = null;
+                        selected_item = null;
                     }
-                }//end of raycast
+                }
 
                 break;
 
-
             case Gestures.drag:
 
-                if (selectedObject != null)
+                if (selected_item != null)
                 {
-                    selectedObject.moveTo(Input.touches[0].position);
+                    selected_item.Move(Input.touches[0].position);
                 }
 
                 else
                 {
-                    dragCamere();
+                    Drag_Camera();
                 }
 
                 break;
 
             case Gestures.rotation:
-                float val1 = touch.deltaPosition.y * rotationRate;
-                float val2 = -touch.deltaPosition.x * rotationRate;
+                float val1 = touch.deltaPosition.y * rotation_rate;
+                float val2 = -touch.deltaPosition.x * rotation_rate;
                 Vector3 v = new Vector3(val1, val2, 0);
-                selectedObject.rotateObject(v);
-
-
-                break;
-
-            case Gestures.zoom:
-
-                float deltaDistance = determineFactor();
-                zoom(deltaDistance, touchZoomSpeed);
+                selected_item.Rotate(v);
 
                 break;
 
@@ -144,7 +130,7 @@ public class TouchManager : MonoBehaviour
 
                 float newDistance = (t1 - t2).sqrMagnitude;
 
-                float changeInDistance = newDistance - initialDistance;
+                float changeInDistance = newDistance - start_distance;
 
                 /* if (Mathf.Approximately(initialDistance, 0))
                   {
@@ -152,68 +138,54 @@ public class TouchManager : MonoBehaviour
                       break;
                   }*/
 
-                float percentageChange = changeInDistance / initialDistance;
+                float percentageChange = changeInDistance / start_distance;
 
-                selectedObject.scale(percentageChange);
+                selected_item.Scale(percentageChange);
 
 
                 break;
         }
 
-    }//end of update()
+    }
 
-    private Gestures determineGesture()
+    private Gestures Determine_Gesture()
     {
-        //Touch gone from the screen 
         if (Input.touchCount < 1)
         {
             return Gestures.none;
         }
 
-        //touch count of 1 
         if (Input.touchCount == 1)
         {
-
             touch = Input.GetTouch(0);
 
             switch (touch.phase)
             {
                 case TouchPhase.Began:
-                    startPos = touch.position;
-                    timeTouchBegan = Time.time;
+                    start_pos = touch.position;
+                    time_of_touch = Time.time;
 
                     return Gestures.determining;
 
-                //  break;
-
                 case TouchPhase.Moved:
-                    hasMoved = true;
+                    has_moved = true;
                     return Gestures.drag;
 
                 case TouchPhase.Ended:
-                    // endPos = touch.position;
-                    if (IsTap())
+                    if (Is_Tap())
                     {
                         return Gestures.tap;
                     }
 
-                    hasMoved = false;
+                    has_moved = false;
 
                     return Gestures.none;
 
-                //break;
-
                 default:
                     return Gestures.determining;
+            }
+        }
 
-
-            }//end of switch touch phase
-
-
-
-        }//end of touch count == 1
-
-        //touch count of 2
         if (Input.touchCount == 2)
         {
             Touch touch = Input.GetTouch(0);
@@ -222,32 +194,31 @@ public class TouchManager : MonoBehaviour
 
             if (touch.phase == TouchPhase.Began || touch2.phase == TouchPhase.Began)
             {
-                initialDistance = Vector2.Distance(touch.position, touch2.position);
+                start_distance = Vector2.Distance(touch.position, touch2.position);
                 Vector3 v2 = touch2.position - touch.position;
-                initialAngle = Mathf.Atan2(v2.y, v2.x);
+                initial_angle = Mathf.Atan2(v2.y, v2.x);
 
-                if (selectedObject != null)
+                if (selected_item != null)
                 {
-                    initialRotation = selectedObject.gameObject.transform.rotation;
-                    initialScale = selectedObject.gameObject.transform.localScale;
+                    initial_rotation = selected_item.gameObject.transform.rotation;
+                    initial_scale = selected_item.gameObject.transform.localScale;
                 }
                 else
                 {
-                    initialRotation = Camera.main.transform.rotation;
+                    initial_rotation = Camera.main.transform.rotation;
                 }
 
                 return Gestures.determining;
 
-            }//end of touch.phase == TouchPhase.Began || touch2.phase == TouchPhase.Began
+            }
 
             if (touch.phase == TouchPhase.Ended || touch2.phase == TouchPhase.Ended)
             {
-                currentDeltaChange = 0;
-                currentAngle = 0;
+                current_delta_change = 0;
+                current_angle = 0;
             }
 
-            // Makes sure that the 2 finer gesture doesn't change until after the finers after lifted 
-            switch (currentGesture)
+            switch (current_gesture)
             {
                 case Gestures.rotation:
                     return Gestures.rotation;
@@ -259,55 +230,51 @@ public class TouchManager : MonoBehaviour
                     return Gestures.zoom;
             }
 
-            float angle = determineAngle();
-            float deltaChange = determineFactor();
+            float angle = Determine_Angle();
+            float deltaChange = Determine_Factor();
 
             if (deltaChange < 0)
             {
-                currentDeltaChange = (deltaChange * -1);
+                current_delta_change = (deltaChange * -1);
             }
 
             else
             {
-                currentDeltaChange = deltaChange;
+                current_delta_change = deltaChange;
             }
 
             if (angle < 0)
             {
-                currentAngle += (angle * -1);
+                current_angle += (angle * -1);
             }
 
             else
             {
-                currentAngle += angle;
+                current_angle += angle;
             }
 
-            if (currentDeltaChange >= deltaChangeThreshold && selectedObject != null)
+            if (current_delta_change >= delta_change_threshold && selected_item != null)
             {
                 return Gestures.scale;
             }
 
-            if (currentDeltaChange >= deltaChangeThreshold)
+            if (current_delta_change >= delta_change_threshold)
             {
                 return Gestures.zoom;
             }
 
-            if (currentAngle >= rotationThreshold)
+            if (current_angle >= rotation_threshold)
             {
                 return Gestures.rotation;
             }
 
             return Gestures.determining;
-
-            //print("Two touches");
-
-        }//end of touch count == 2
+        }
 
         return Gestures.none;
+    }
 
-    }//end of DetermineGesture()
-
-    private float determineFactor()
+    private float Determine_Factor()
     {
         Touch tZero = Input.GetTouch(0);
         Touch tOne = Input.GetTouch(1);
@@ -320,16 +287,14 @@ public class TouchManager : MonoBehaviour
 
         float deltaDistance = oldTouchDistance - currentTouchDistance;
 
-        // Debug.Log("Delta distance" + deltaDistance);
-
         return deltaDistance;
     }
 
-    private bool IsTap()
+    private bool Is_Tap()
     {
-        float touchTime = Time.time - timeTouchBegan;
+        float touchTime = Time.time - time_of_touch;
 
-        if (touchTime <= tapTimeThreshold && !hasMoved)
+        if (touchTime <= tap_time_threshold && !has_moved)
         {
             return true;
         }
@@ -340,28 +305,23 @@ public class TouchManager : MonoBehaviour
         }
     }
 
-    public void zoom(float deltaMagnitudeDiff, float speed)
+    public void Zoom(float deltaMagnitudeDiff, float speed)
     {
         Camera.main.fieldOfView += deltaMagnitudeDiff * speed;
-        Camera.main.fieldOfView = Mathf.Clamp(Camera.main.fieldOfView, zoomMinBound, zoomMaxBound);
+        Camera.main.fieldOfView = Mathf.Clamp(Camera.main.fieldOfView, zoom_min_bound, zoom_max_bound);
     }
 
-    public void dragCamere()
+    public void Drag_Camera()
     {
         Vector2 touchDeltaPosition = Input.touches[0].deltaPosition * Time.deltaTime;
         Camera.main.transform.Translate(-touchDeltaPosition.x, touchDeltaPosition.y, 0);
     }
 
-    public void onClick()
-    {
-        SceneManager.LoadScene(0);
-    }
-
-    private float determineAngle()
+    private float Determine_Angle()
     {
         Vector3 v = Input.touches[1].position - Input.touches[0].position;
         float theta = Mathf.Atan2(v.y, v.x);
-        theta = theta - initialAngle;
+        theta = theta - initial_angle;
 
         return theta;
     }

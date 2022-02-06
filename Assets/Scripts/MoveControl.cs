@@ -2,38 +2,45 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MoveControl : MonoBehaviour, IControllable
+public class MoveControl : MonoBehaviour, IController
 {
-    private Vector3 dragPosition;
-    Renderer objectRenderer;
-    Color32 objectColour;
-    float initialDistance; 
+    private Vector3 pos;
+    private Renderer rend;
+    private Color32 colour;
+    private float start_distance;
+    private bool selected = false;
 
+    public bool Get_Selected()
+    {
+        return selected;
+    }
 
-    public void moveTo(Vector3 pos)
+    public void Move(Vector3 pos)
     {
         Ray newPositionRay = Camera.main.ScreenPointToRay(pos);
-        Vector3 destination = newPositionRay.GetPoint(initialDistance);
-        dragPosition = destination;
+        Vector3 destination = newPositionRay.GetPoint(start_distance);
+        this.pos = destination;
     }
 
-    public void objectDeselected()
+    public void Deselected()
     {
-        objectRenderer.material.SetColor("_Color", objectColour);
+        rend.material.SetColor("_Color", colour);
+        selected = false;
     }
 
-    public void objectSelected()
+    public void Selected()
     {
-        initialDistance = Vector3.Distance(Camera.main.transform.position, transform.position);
-        objectRenderer.material.SetColor("_Color", Color.yellow);
+        start_distance = Vector3.Distance(Camera.main.transform.position, transform.position);
+        rend.material.SetColor("_Color", Color.red);
+        selected = true;
     }
 
-    public void rotateObject(Vector3 v)
+    public void Rotate(Vector3 v)
     {
         transform.Rotate(v, Space.World);
     }
 
-    public void scale(float percentageChange)
+    public void Scale(float percentageChange)
     {
         Vector3 newScale = transform.localScale;
         newScale += percentageChange * transform.localScale;
@@ -41,22 +48,17 @@ public class MoveControl : MonoBehaviour, IControllable
         transform.localScale = newScale;
     }
 
-    public void youveBeenTouched()
-    {
-        
-    }
-
     // Start is called before the first frame update
     void Start()
     {
-        dragPosition = transform.position;
-        objectRenderer = GetComponent<Renderer>();
-        objectColour = GetComponent<Renderer>().material.color;
+        pos = transform.position;
+        rend = GetComponent<Renderer>();
+        colour = GetComponent<Renderer>().material.color;
     }
 
     // Update is called once per frame
     void Update()
     {
-        transform.position = Vector3.Lerp(transform.position, dragPosition, 0.05f);
+        transform.position = Vector3.Lerp(transform.position, pos, 0.05f);
     }
 }
