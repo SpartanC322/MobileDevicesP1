@@ -5,8 +5,8 @@ using UnityEngine.SceneManagement;
 
 public class TouchManager : MonoBehaviour
 {
-    enum Gestures { none, determining, tap, drag, rotation, zoom, scale };
-    Gestures current_gesture = Gestures.none;
+    enum Gestures { None, Determining, Tap, Drag, Rotation, Zoom, Scale };
+    Gestures current_gesture = Gestures.None;
 
     Vector3 start_pos;
     Vector3 end_pos;
@@ -15,8 +15,8 @@ public class TouchManager : MonoBehaviour
     Vector2 t1;
     Vector2 t2;
 
-    IController selected_item;
-    IController object_hit;
+    IInteractable selected_item;
+    IInteractable object_hit;
 
     Renderer rend;
     
@@ -49,19 +49,19 @@ public class TouchManager : MonoBehaviour
     void Update()
     {
         current_gesture = Determine_Gesture();
-        print("Current gesture: " + current_gesture);
+        print("Gesture: " + current_gesture);
 
         switch (current_gesture)
         {
-            case Gestures.none:
+            case Gestures.None:
 
                 break;
 
-            case Gestures.determining:
+            case Gestures.Determining:
 
                 break;
 
-            case Gestures.tap:
+            case Gestures.Tap:
                 RaycastHit info;
                 Ray ray;
                 ray = Camera.main.ScreenPointToRay(Input.touches[0].position);
@@ -70,7 +70,7 @@ public class TouchManager : MonoBehaviour
 
                 if (Physics.Raycast(ray, out info))
                 {
-                    object_hit = info.transform.GetComponent<IController>();
+                    object_hit = info.transform.GetComponent<IInteractable>();
 
                     if (object_hit != null)
                     {
@@ -100,7 +100,7 @@ public class TouchManager : MonoBehaviour
 
                 break;
 
-            case Gestures.drag:
+            case Gestures.Drag:
 
                 if (selected_item != null)
                 {
@@ -114,7 +114,7 @@ public class TouchManager : MonoBehaviour
 
                 break;
 
-            case Gestures.rotation:
+            case Gestures.Rotation:
                 float val1 = touch.deltaPosition.y * rotation_rate;
                 float val2 = -touch.deltaPosition.x * rotation_rate;
                 Vector3 v = new Vector3(val1, val2, 0);
@@ -122,7 +122,7 @@ public class TouchManager : MonoBehaviour
 
                 break;
 
-            case Gestures.scale:
+            case Gestures.Scale:
 
 
                 t1 = Input.GetTouch(0).position;
@@ -152,7 +152,7 @@ public class TouchManager : MonoBehaviour
     {
         if (Input.touchCount < 1)
         {
-            return Gestures.none;
+            return Gestures.None;
         }
 
         if (Input.touchCount == 1)
@@ -165,24 +165,24 @@ public class TouchManager : MonoBehaviour
                     start_pos = touch.position;
                     time_of_touch = Time.time;
 
-                    return Gestures.determining;
+                    return Gestures.Determining;
 
                 case TouchPhase.Moved:
                     has_moved = true;
-                    return Gestures.drag;
+                    return Gestures.Drag;
 
                 case TouchPhase.Ended:
                     if (Is_Tap())
                     {
-                        return Gestures.tap;
+                        return Gestures.Tap;
                     }
 
                     has_moved = false;
 
-                    return Gestures.none;
+                    return Gestures.None;
 
                 default:
-                    return Gestures.determining;
+                    return Gestures.Determining;
             }
         }
 
@@ -208,7 +208,7 @@ public class TouchManager : MonoBehaviour
                     initial_rotation = Camera.main.transform.rotation;
                 }
 
-                return Gestures.determining;
+                return Gestures.Determining;
 
             }
 
@@ -220,14 +220,14 @@ public class TouchManager : MonoBehaviour
 
             switch (current_gesture)
             {
-                case Gestures.rotation:
-                    return Gestures.rotation;
+                case Gestures.Rotation:
+                    return Gestures.Rotation;
 
-                case Gestures.scale:
-                    return Gestures.scale;
+                case Gestures.Scale:
+                    return Gestures.Scale;
 
-                case Gestures.zoom:
-                    return Gestures.zoom;
+                case Gestures.Zoom:
+                    return Gestures.Zoom;
             }
 
             float angle = Determine_Angle();
@@ -255,23 +255,23 @@ public class TouchManager : MonoBehaviour
 
             if (current_delta_change >= delta_change_threshold && selected_item != null)
             {
-                return Gestures.scale;
+                return Gestures.Scale;
             }
 
             if (current_delta_change >= delta_change_threshold)
             {
-                return Gestures.zoom;
+                return Gestures.Zoom;
             }
 
             if (current_angle >= rotation_threshold)
             {
-                return Gestures.rotation;
+                return Gestures.Rotation;
             }
 
-            return Gestures.determining;
+            return Gestures.Determining;
         }
 
-        return Gestures.none;
+        return Gestures.None;
     }
 
     private float Determine_Factor()

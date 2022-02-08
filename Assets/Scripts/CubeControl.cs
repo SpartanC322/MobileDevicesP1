@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MoveControl : MonoBehaviour, IController
+public class CubeControl : MonoBehaviour, IInteractable
 {
     private Vector3 pos;
     private Renderer rend;

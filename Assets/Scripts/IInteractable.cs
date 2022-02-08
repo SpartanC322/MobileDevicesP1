@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-interface IController
+interface IInteractable
 {
     GameObject gameObject { get; }
 
