@@ -2,19 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SphereControl : MonoBehaviour, IInteractable
+public class SphereControl : ObjectControl
 {
-    private Vector3 pos;
-    private Renderer rend;
-    private Color32 colour;
-    private float start_distance;
-    private bool selected = false;
-
-    public bool Get_Selected()
-    {
-        return selected;
-    }
-
     //OLD MOVE
     //public void Move(Vector3 pos)
     //{
@@ -23,50 +12,10 @@ public class SphereControl : MonoBehaviour, IInteractable
     //    this.pos = destination;
     //}
 
-    public void Deselected()
+    //NEW MOVE, NOW WITH EXTRA LERP!
+    public override void Move(Touch t)
     {
-        rend.material.SetColor("_Color", colour);
-        selected = false;
-    }
-
-    public void Selected()
-    {
-        start_distance = Vector3.Distance(Camera.main.transform.position, transform.position);
-        rend.material.SetColor("_Color", Color.red);
-        selected = true;
-    }
-
-    public void Rotate(Vector3 v)
-    {
-        transform.Rotate(v, Space.World);
-    }
-
-    public void Scale(float percentageChange)
-    {
-        Vector3 newScale = transform.localScale;
-        newScale += percentageChange * transform.localScale;
-
-        transform.localScale = newScale;
-    }
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        pos = transform.position;
-        rend = GetComponent<Renderer>();
-        colour = GetComponent<Renderer>().material.color;
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-
-    //NEW MOVE WITH EXTRA LERP
-    public void Move(Vector3 pos)
-    {
-        Vector3 touch = Camera.main.ScreenToWorldPoint(pos);
+        Vector3 touch = Camera.main.ScreenToWorldPoint(t.position);
         transform.position = Vector3.Lerp(transform.position, touch, Time.deltaTime);
     }
 }

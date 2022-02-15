@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 
 public class TouchManager : MonoBehaviour
 {
-    enum Gestures { None, Determining, Tap, Drag, Rotation, Zoom, Scale };
+    enum Gestures { None, Determining, Tap, Drag };
     Gestures current_gesture = Gestures.None;
 
     Vector3 start_pos;
@@ -75,73 +75,25 @@ public class TouchManager : MonoBehaviour
                     if (object_hit != null)
                     {
                         selected_item = object_hit;
-                        if (selected_item.Get_Selected() == false)
-                        {
-                            starting_distance_to_selected_object = Vector3.Distance(Camera.main.transform.position, info.transform.position);
-                            selected_item.Selected();
-                        }
-                        if (selected_item.Get_Selected() == true)
-                        {
-                            //selected_item.Deselected();
-                            //starting_distance_to_selected_object = 0;
-                        }
+                        starting_distance_to_selected_object = Vector3.Distance(Camera.main.transform.position, info.transform.position);
+                        selected_item.Toggle_Active();
                     }
 
-                    else
-                    {
-                        if (selected_item != null)
-                        {
-                            selected_item.Deselected();
-                        }
-
-                        selected_item = null;
-                    }
                 }
 
                 break;
 
             case Gestures.Drag:
 
-                if (selected_item != null)
+                if (selected_item != null && selected_item.Get_Selected() == true)
                 {
-                    selected_item.Move(Input.touches[0].position);
+                    selected_item.Move(Input.touches[0]);
                 }
 
                 else
                 {
                     Drag_Camera();
                 }
-
-                break;
-
-            case Gestures.Rotation:
-                float val1 = touch.deltaPosition.y * rotation_rate;
-                float val2 = -touch.deltaPosition.x * rotation_rate;
-                Vector3 v = new Vector3(val1, val2, 0);
-                selected_item.Rotate(v);
-
-                break;
-
-            case Gestures.Scale:
-
-
-                t1 = Input.GetTouch(0).position;
-                t2 = Input.GetTouch(1).position;
-
-                float newDistance = (t1 - t2).sqrMagnitude;
-
-                float changeInDistance = newDistance - start_distance;
-
-                /* if (Mathf.Approximately(initialDistance, 0))
-                  {
-                      //if bad 
-                      break;
-                  }*/
-
-                float percentageChange = changeInDistance / start_distance;
-
-                selected_item.Scale(percentageChange);
-
 
                 break;
         }
@@ -188,87 +140,87 @@ public class TouchManager : MonoBehaviour
 
         if (Input.touchCount == 2)
         {
-            Touch touch = Input.GetTouch(0);
+            //Touch touch = Input.GetTouch(0);
 
-            Touch touch2 = Input.GetTouch(1);
+            //Touch touch2 = Input.GetTouch(1);
 
-            if (touch.phase == TouchPhase.Began || touch2.phase == TouchPhase.Began)
-            {
-                start_distance = Vector2.Distance(touch.position, touch2.position);
-                Vector3 v2 = touch2.position - touch.position;
-                initial_angle = Mathf.Atan2(v2.y, v2.x);
+            //if (touch.phase == TouchPhase.Began || touch2.phase == TouchPhase.Began)
+            //{
+            //    start_distance = Vector2.Distance(touch.position, touch2.position);
+            //    Vector3 v2 = touch2.position - touch.position;
+            //    initial_angle = Mathf.Atan2(v2.y, v2.x);
 
-                if (selected_item != null)
-                {
-                    initial_rotation = selected_item.gameObject.transform.rotation;
-                    initial_scale = selected_item.gameObject.transform.localScale;
-                }
-                else
-                {
-                    initial_rotation = Camera.main.transform.rotation;
-                }
+            //    if (selected_item != null)
+            //    {
+            //        initial_rotation = selected_item.gameObject.transform.rotation;
+            //        initial_scale = selected_item.gameObject.transform.localScale;
+            //    }
+            //    else
+            //    {
+            //        initial_rotation = Camera.main.transform.rotation;
+            //    }
 
-                return Gestures.Determining;
+            //    return Gestures.Determining;
 
-            }
+            //}
 
-            if (touch.phase == TouchPhase.Ended || touch2.phase == TouchPhase.Ended)
-            {
-                current_delta_change = 0;
-                current_angle = 0;
-            }
+            //if (touch.phase == TouchPhase.Ended || touch2.phase == TouchPhase.Ended)
+            //{
+            //    current_delta_change = 0;
+            //    current_angle = 0;
+            //}
 
-            switch (current_gesture)
-            {
-                case Gestures.Rotation:
-                    return Gestures.Rotation;
+            //switch (current_gesture)
+            //{
+            //    case Gestures.Rotation:
+            //        return Gestures.Rotation;
 
-                case Gestures.Scale:
-                    return Gestures.Scale;
+            //    case Gestures.Scale:
+            //        return Gestures.Scale;
 
-                case Gestures.Zoom:
-                    return Gestures.Zoom;
-            }
+            //    case Gestures.Zoom:
+            //        return Gestures.Zoom;
+            //}
 
-            float angle = Determine_Angle();
-            float deltaChange = Determine_Factor();
+            //float angle = Determine_Angle();
+            //float deltaChange = Determine_Factor();
 
-            if (deltaChange < 0)
-            {
-                current_delta_change = (deltaChange * -1);
-            }
+            //if (deltaChange < 0)
+            //{
+            //    current_delta_change = (deltaChange * -1);
+            //}
 
-            else
-            {
-                current_delta_change = deltaChange;
-            }
+            //else
+            //{
+            //    current_delta_change = deltaChange;
+            //}
 
-            if (angle < 0)
-            {
-                current_angle += (angle * -1);
-            }
+            //if (angle < 0)
+            //{
+            //    current_angle += (angle * -1);
+            //}
 
-            else
-            {
-                current_angle += angle;
-            }
+            //else
+            //{
+            //    current_angle += angle;
+            //}
 
-            if (current_delta_change >= delta_change_threshold && selected_item != null)
-            {
-                return Gestures.Scale;
-            }
+            //if (current_delta_change >= delta_change_threshold && selected_item != null)
+            //{
+            //    return Gestures.Scale;
+            //}
 
-            if (current_delta_change >= delta_change_threshold)
-            {
-                return Gestures.Zoom;
-            }
+            //if (current_delta_change >= delta_change_threshold)
+            //{
+            //    return Gestures.Zoom;
+            //}
 
-            if (current_angle >= rotation_threshold)
-            {
-                return Gestures.Rotation;
-            }
+            //if (current_angle >= rotation_threshold)
+            //{
+            //    return Gestures.Rotation;
+            //}
 
-            return Gestures.Determining;
+            //return Gestures.Determining;
         }
 
         return Gestures.None;

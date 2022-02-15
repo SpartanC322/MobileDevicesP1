@@ -6,15 +6,13 @@ interface IInteractable
 {
     GameObject gameObject { get; }
 
-    void Move(Vector3 destination);
+    void Move(Touch t);
 
     void Scale(float percentageChange);
 
     void Rotate(Vector3 v);
 
-    void Selected();
-
-    void Deselected();
+    void Toggle_Active();
 
     bool Get_Selected();
 }
