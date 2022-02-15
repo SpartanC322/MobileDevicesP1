@@ -15,7 +15,8 @@ public class SphereControl : ObjectControl
     //NEW MOVE, NOW WITH EXTRA LERP!
     public override void Move(Touch t)
     {
-        Vector3 touch = Camera.main.ScreenToWorldPoint(t.position);
+        Vector3 touched_pos = new Vector3(Input.touches[0].position.x, Input.touches[0].position.y, start_distance);
+        Vector3 touch = Camera.main.ScreenToWorldPoint(touched_pos);
         transform.position = Vector3.Lerp(transform.position, touch, Time.deltaTime);
     }
 }

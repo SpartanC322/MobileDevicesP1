@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 
 public class TouchManager : MonoBehaviour
 {
-    enum Gestures { None, Determining, Tap, Drag };
+    enum Gestures { None, Determining, Tap, Drag, Pinch };
     Gestures current_gesture = Gestures.None;
 
     Vector3 start_pos;
@@ -21,21 +21,13 @@ public class TouchManager : MonoBehaviour
     Renderer rend;
     
     Touch touch;
-    
-    Quaternion initial_rotation;
 
-    private const float delta_change_threshold = 10f;
-    private const float rotation_threshold = 0.1f;
-    private float starting_distance_to_selected_object;
-    private float start_distance;
-    private float current_angle;
-    private float current_delta_change;
     private float zoom_min_bound = 0.1f;
     private float zoom_max_bound = 179.9f;
-    private float rotation_rate = 3.0f;
     private float time_of_touch = 0f;
     private float tap_time_threshold = 0.5f;
     private float initial_angle;
+    private float pinch_speed = 0.1f;
 
     private bool has_moved;
 
@@ -75,7 +67,6 @@ public class TouchManager : MonoBehaviour
                     if (object_hit != null)
                     {
                         selected_item = object_hit;
-                        starting_distance_to_selected_object = Vector3.Distance(Camera.main.transform.position, info.transform.position);
                         selected_item.Toggle_Active();
                     }
 
@@ -94,6 +85,13 @@ public class TouchManager : MonoBehaviour
                 {
                     Drag_Camera();
                 }
+
+                break;
+
+            case Gestures.Pinch:
+
+                float dis = Determine_Factor();
+                Pinch(dis, pinch_speed);
 
                 break;
         }
@@ -140,87 +138,7 @@ public class TouchManager : MonoBehaviour
 
         if (Input.touchCount == 2)
         {
-            //Touch touch = Input.GetTouch(0);
-
-            //Touch touch2 = Input.GetTouch(1);
-
-            //if (touch.phase == TouchPhase.Began || touch2.phase == TouchPhase.Began)
-            //{
-            //    start_distance = Vector2.Distance(touch.position, touch2.position);
-            //    Vector3 v2 = touch2.position - touch.position;
-            //    initial_angle = Mathf.Atan2(v2.y, v2.x);
-
-            //    if (selected_item != null)
-            //    {
-            //        initial_rotation = selected_item.gameObject.transform.rotation;
-            //        initial_scale = selected_item.gameObject.transform.localScale;
-            //    }
-            //    else
-            //    {
-            //        initial_rotation = Camera.main.transform.rotation;
-            //    }
-
-            //    return Gestures.Determining;
-
-            //}
-
-            //if (touch.phase == TouchPhase.Ended || touch2.phase == TouchPhase.Ended)
-            //{
-            //    current_delta_change = 0;
-            //    current_angle = 0;
-            //}
-
-            //switch (current_gesture)
-            //{
-            //    case Gestures.Rotation:
-            //        return Gestures.Rotation;
-
-            //    case Gestures.Scale:
-            //        return Gestures.Scale;
-
-            //    case Gestures.Zoom:
-            //        return Gestures.Zoom;
-            //}
-
-            //float angle = Determine_Angle();
-            //float deltaChange = Determine_Factor();
-
-            //if (deltaChange < 0)
-            //{
-            //    current_delta_change = (deltaChange * -1);
-            //}
-
-            //else
-            //{
-            //    current_delta_change = deltaChange;
-            //}
-
-            //if (angle < 0)
-            //{
-            //    current_angle += (angle * -1);
-            //}
-
-            //else
-            //{
-            //    current_angle += angle;
-            //}
-
-            //if (current_delta_change >= delta_change_threshold && selected_item != null)
-            //{
-            //    return Gestures.Scale;
-            //}
-
-            //if (current_delta_change >= delta_change_threshold)
-            //{
-            //    return Gestures.Zoom;
-            //}
-
-            //if (current_angle >= rotation_threshold)
-            //{
-            //    return Gestures.Rotation;
-            //}
-
-            //return Gestures.Determining;
+            
         }
 
         return Gestures.None;
@@ -228,18 +146,18 @@ public class TouchManager : MonoBehaviour
 
     private float Determine_Factor()
     {
-        Touch tZero = Input.GetTouch(0);
-        Touch tOne = Input.GetTouch(1);
+        Touch t_zero = Input.GetTouch(0);
+        Touch t_one = Input.GetTouch(1);
 
-        Vector2 tZeroPrevPos = tZero.position - tZero.deltaPosition;
-        Vector2 tOnePrevPos = tOne.position - tOne.deltaPosition;
+        Vector2 t_zero_pre = t_zero.position - t_zero.deltaPosition;
+        Vector2 t_one_prev = t_one.position - t_one.deltaPosition;
 
-        float oldTouchDistance = Vector2.Distance(tZeroPrevPos, tOnePrevPos);
-        float currentTouchDistance = Vector2.Distance(tZero.position, tOne.position);
+        float pre_touch_dist = Vector2.Distance(t_zero_pre, t_one_prev);
+        float cur_touch_dist = Vector2.Distance(t_zero.position, t_one.position);
 
-        float deltaDistance = oldTouchDistance - currentTouchDistance;
+        float d_dist = pre_touch_dist - cur_touch_dist;
 
-        return deltaDistance;
+        return d_dist;
     }
 
     private bool Is_Tap()
@@ -257,7 +175,7 @@ public class TouchManager : MonoBehaviour
         }
     }
 
-    public void Zoom(float deltaMagnitudeDiff, float speed)
+    public void Pinch(float deltaMagnitudeDiff, float speed)
     {
         Camera.main.fieldOfView += deltaMagnitudeDiff * speed;
         Camera.main.fieldOfView = Mathf.Clamp(Camera.main.fieldOfView, zoom_min_bound, zoom_max_bound);
