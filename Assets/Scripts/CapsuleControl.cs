@@ -4,24 +4,17 @@ using UnityEngine;
 
 public class CapsuleControl : ObjectControl
 {
-    //public override void Move(Vector3 pos)
-    //{
-    //    Ray newPositionRay = Camera.main.ScreenPointToRay(pos);
-    //    Vector3 destination = newPositionRay.GetPoint(start_distance);
-    //    this.pos = destination;
-    //}
-
-    public override void Move(Touch t)
+    public override void Move(Touch touch)
     {
-        Ray newPositionRay = Camera.main.ScreenPointToRay(t.position);
-        RaycastHit[] hits = Physics.RaycastAll(newPositionRay);
-        int groundMask = LayerMask.NameToLayer("Ground");
+        Ray my_ray = Camera.main.ScreenPointToRay(touch.position);
+        RaycastHit[] hits = Physics.RaycastAll(my_ray);
+        int ground_mask = LayerMask.NameToLayer("Ground");
 
         float closest = Mathf.Infinity;
 
         foreach (RaycastHit hit in hits)
         {
-            if (hit.transform.gameObject.layer == groundMask)
+            if (hit.transform.gameObject.layer == ground_mask)
             {
                 if (hit.distance < closest)
                 {

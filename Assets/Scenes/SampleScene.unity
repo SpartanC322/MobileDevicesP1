@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.44657826, g: 0.49641263, b: 0.57481676, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657874, g: 0.49641258, b: 0.5748172, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -444,13 +444,22 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
+<<<<<<< Updated upstream
   m_LocalRotation: {x: 0.38268343, y: 0, z: 0, w: 0.92387956}
   m_LocalPosition: {x: 0, y: 6, z: -6}
+=======
+  m_LocalRotation: {x: 0.26041883, y: 0.4768585, z: -0.15035288, w: 0.8259431}
+  m_LocalPosition: {x: -5.43, y: 4.15, z: -3.3}
+>>>>>>> Stashed changes
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
+<<<<<<< Updated upstream
   m_LocalEulerAnglesHint: {x: 45, y: 0, z: 0}
+=======
+  m_LocalEulerAnglesHint: {x: 35, y: 60, z: 0}
+>>>>>>> Stashed changes
 --- !u!1 &1641082748
 GameObject:
   m_ObjectHideFlags: 0

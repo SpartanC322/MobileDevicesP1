@@ -95,7 +95,6 @@ public class TouchManager : MonoBehaviour
 
                 break;
         }
-
     }
 
     private Gestures Determine_Gesture()
@@ -138,7 +137,11 @@ public class TouchManager : MonoBehaviour
 
         if (Input.touchCount == 2)
         {
+<<<<<<< Updated upstream
             
+=======
+
+>>>>>>> Stashed changes
         }
 
         return Gestures.None;
@@ -146,6 +149,7 @@ public class TouchManager : MonoBehaviour
 
     private float Determine_Factor()
     {
+<<<<<<< Updated upstream
         Touch t_zero = Input.GetTouch(0);
         Touch t_one = Input.GetTouch(1);
 
@@ -158,13 +162,27 @@ public class TouchManager : MonoBehaviour
         float d_dist = pre_touch_dist - cur_touch_dist;
 
         return d_dist;
+=======
+        Touch first_touch = Input.GetTouch(0);
+        Touch second_touch = Input.GetTouch(1);
+
+        Vector2 first_touch_prev = first_touch.position - first_touch.deltaPosition;
+        Vector2 second_touch_prev = second_touch.position - second_touch.deltaPosition;
+
+        float old_dist = Vector2.Distance(first_touch_prev, second_touch_prev);
+        float current_dist = Vector2.Distance(first_touch.position, second_touch.position);
+
+        float delta = old_dist - current_dist;
+
+        return delta;
+>>>>>>> Stashed changes
     }
 
     private bool Is_Tap()
     {
-        float touchTime = Time.time - time_of_touch;
+        float time = Time.time - time_of_touch;
 
-        if (touchTime <= tap_time_threshold && !has_moved)
+        if (time <= tap_time_threshold && !has_moved)
         {
             return true;
         }
@@ -175,12 +193,15 @@ public class TouchManager : MonoBehaviour
         }
     }
 
+<<<<<<< Updated upstream
     public void Pinch(float deltaMagnitudeDiff, float speed)
     {
         Camera.main.fieldOfView += deltaMagnitudeDiff * speed;
         Camera.main.fieldOfView = Mathf.Clamp(Camera.main.fieldOfView, zoom_min_bound, zoom_max_bound);
     }
 
+=======
+>>>>>>> Stashed changes
     public void Drag_Camera()
     {
         Vector2 touchDeltaPosition = Input.touches[0].deltaPosition * Time.deltaTime;

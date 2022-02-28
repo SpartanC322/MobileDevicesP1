@@ -47,7 +47,7 @@ public abstract class ObjectControl : MonoBehaviour, IInteractable
     }
 
     // Start is called before the first frame update
-    void Start()
+    public void Start()
     {
         pos = transform.position;
         rend = GetComponent<Renderer>();
@@ -55,8 +55,8 @@ public abstract class ObjectControl : MonoBehaviour, IInteractable
     }
 
     // Update is called once per frame
-    void Update()
+    public void Update()
     {
-        transform.position = Vector3.Lerp(transform.position, pos, 0.05f);
+        transform.position = Vector3.Lerp(transform.position, pos, 0.5f);
     }
 }

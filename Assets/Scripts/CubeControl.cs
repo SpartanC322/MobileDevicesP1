@@ -4,10 +4,10 @@ using UnityEngine;
 
 public class CubeControl : ObjectControl
 {
-    public override void Move(Touch t)
+    public override void Move(Touch touch)
     {
-        Ray newPositionRay = Camera.main.ScreenPointToRay(t.position);
-        Vector3 destination = newPositionRay.GetPoint(start_distance);
-        this.pos = destination;
+        Ray my_ray = Camera.main.ScreenPointToRay(touch.position);
+        Vector3 dest = my_ray.GetPoint(start_distance);
+        this.pos = dest;
     }
 }
