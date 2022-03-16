@@ -58,5 +58,9 @@ public abstract class ObjectControl : MonoBehaviour, IInteractable
     public void Update()
     {
         transform.position = Vector3.Lerp(transform.position, pos, 0.5f);
+        if (selected == false && rend.material.color == Color.red)
+        {
+            rend.material.color = colour;
+        }
     }
 }

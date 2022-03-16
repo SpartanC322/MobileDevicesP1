@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 
 public class TouchManager : MonoBehaviour
 {
-    enum Gestures { None, Determining, Tap, Drag, Pinch };
+    enum Gestures { None, Determining, Tap, Drag, Pinch, Rotation, Scale, Zoom };
     Gestures current_gesture = Gestures.None;
 
     Vector3 start_pos;
@@ -18,6 +18,8 @@ public class TouchManager : MonoBehaviour
     IInteractable selected_item;
     IInteractable object_hit;
 
+    Quaternion initial_rotation;
+
     Renderer rend;
     
     Touch touch;
@@ -27,7 +29,12 @@ public class TouchManager : MonoBehaviour
     private float time_of_touch = 0f;
     private float tap_time_threshold = 0.5f;
     private float initial_angle;
+    private float initial_distance;
     private float pinch_speed = 0.1f;
+    private float current_delta;
+    private float current_angle;
+    private float threshold = 10;
+    private float rotation_speed = 0.5f;
 
     private bool has_moved;
 
@@ -41,7 +48,10 @@ public class TouchManager : MonoBehaviour
     void Update()
     {
         current_gesture = Determine_Gesture();
-        print("Gesture: " + current_gesture);
+        if (current_gesture != Gestures.None)
+        {
+            print("Gesture: " + current_gesture);
+        }
 
         switch (current_gesture)
         {
@@ -83,7 +93,7 @@ public class TouchManager : MonoBehaviour
 
                 else
                 {
-                    Drag_Camera();
+                    //Drag_Camera();
                 }
 
                 break;
@@ -92,6 +102,15 @@ public class TouchManager : MonoBehaviour
 
                 float dis = Determine_Factor();
                 Pinch(dis, pinch_speed);
+
+                break;
+
+            case Gestures.Rotation:
+
+                float r1 = touch.deltaPosition.y * rotation_speed;
+                float r2 = -touch.deltaPosition.x * rotation_speed;
+                Vector3 r = new Vector3(r1, r2, 0);
+                selected_item.Rotate(r);
 
                 break;
         }
@@ -137,11 +156,85 @@ public class TouchManager : MonoBehaviour
 
         if (Input.touchCount == 2)
         {
-<<<<<<< Updated upstream
-            
-=======
+            Touch touch_first = Input.GetTouch(0);
+            Touch touch_second = Input.GetTouch(1);
 
->>>>>>> Stashed changes
+            if (touch_first.phase == TouchPhase.Began || touch_second.phase == TouchPhase.Began)
+            {
+                initial_distance = Vector2.Distance(touch_first.position, touch_second.position);
+                Vector3 distance = touch_second.position - touch_first.position;
+                initial_angle = Mathf.Atan2(distance.x, distance.y);
+
+                if(selected_item != null)
+                {
+                    initial_rotation = selected_item.gameObject.transform.rotation;
+                    initial_scale = selected_item.gameObject.transform.localScale;
+                }
+                else
+                {
+                    initial_rotation = Camera.main.transform.rotation;
+                }
+
+                return Gestures.Determining;
+            }
+
+            if (touch_first.phase == TouchPhase.Ended || touch_second.phase == TouchPhase.Ended)
+            {
+                current_delta = 0;
+                current_angle = 0;
+            }
+
+            switch (current_gesture)
+            {
+                case Gestures.Rotation:
+                    return Gestures.Rotation;
+
+                case Gestures.Scale:
+                    return Gestures.Scale;
+
+                case Gestures.Zoom:
+                    return Gestures.Zoom;
+            }
+
+            float change = Determine_Factor();
+            float angle = Determine_Angle();
+
+            if (change < 0)
+            {
+                current_delta = (change * -1);
+            }
+
+            else
+            {
+                current_delta = change;
+            }
+
+            if (angle < 0)
+            {
+                current_angle += (angle * -1);
+            }
+
+            else
+            {
+                current_angle += angle;
+            }
+
+            if (current_delta >= threshold && selected_item != null)
+            {
+                return Gestures.Scale;
+            }
+
+            if (current_delta >= threshold)
+            {
+                return Gestures.Zoom;
+            }
+
+            if (current_angle >= threshold / 100)
+            {
+                return Gestures.Rotation;
+            }
+
+            return Gestures.Determining;
         }
 
         return Gestures.None;
@@ -149,20 +242,6 @@ public class TouchManager : MonoBehaviour
 
     private float Determine_Factor()
     {
-<<<<<<< Updated upstream
-        Touch t_zero = Input.GetTouch(0);
-        Touch t_one = Input.GetTouch(1);
-
-        Vector2 t_zero_pre = t_zero.position - t_zero.deltaPosition;
-        Vector2 t_one_prev = t_one.position - t_one.deltaPosition;
-
-        float pre_touch_dist = Vector2.Distance(t_zero_pre, t_one_prev);
-        float cur_touch_dist = Vector2.Distance(t_zero.position, t_one.position);
-
-        float d_dist = pre_touch_dist - cur_touch_dist;
-
-        return d_dist;
-=======
         Touch first_touch = Input.GetTouch(0);
         Touch second_touch = Input.GetTouch(1);
 
@@ -175,7 +254,6 @@ public class TouchManager : MonoBehaviour
         float delta = old_dist - current_dist;
 
         return delta;
->>>>>>> Stashed changes
     }
 
     private bool Is_Tap()
@@ -193,20 +271,17 @@ public class TouchManager : MonoBehaviour
         }
     }
 
-<<<<<<< Updated upstream
     public void Pinch(float deltaMagnitudeDiff, float speed)
     {
         Camera.main.fieldOfView += deltaMagnitudeDiff * speed;
         Camera.main.fieldOfView = Mathf.Clamp(Camera.main.fieldOfView, zoom_min_bound, zoom_max_bound);
     }
 
-=======
->>>>>>> Stashed changes
-    public void Drag_Camera()
-    {
-        Vector2 touchDeltaPosition = Input.touches[0].deltaPosition * Time.deltaTime;
-        Camera.main.transform.Translate(-touchDeltaPosition.x, touchDeltaPosition.y, 0);
-    }
+    //public void Drag_Camera()
+    //{
+    //    Vector2 touchDeltaPosition = Input.touches[0].deltaPosition * Time.deltaTime;
+    //    Camera.main.transform.Translate(-touchDeltaPosition.x, touchDeltaPosition.y, 0);
+    //}
 
     private float Determine_Angle()
     {
