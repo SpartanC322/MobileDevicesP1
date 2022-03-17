@@ -21,7 +21,6 @@ public class Instantiator : MonoBehaviour
         sphere.AddComponent<SphereControl>();
         cube.AddComponent<CubeControl>();
         capsule.AddComponent<CapsuleControl>();
-        ground.AddComponent<Renderer>();
         manager.AddComponent<TouchManager>();
 
         ground.name = "Ground";

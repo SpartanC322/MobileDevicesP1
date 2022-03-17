@@ -33,17 +33,19 @@ public abstract class ObjectControl : MonoBehaviour, IInteractable
         }
     }
 
-    public void Rotate(Vector3 v)
+    public void Rotate(Quaternion rotation)
     {
-        transform.Rotate(v, Space.World);
+        //Quaternion start_rotation = transform.rotation;
+        //transform.rotation = rotation * start_rotation;
+
+        transform.rotation = rotation * Quaternion.identity;
     }
 
-    public void Scale(float percentageChange)
+    public void Scale(float change)
     {
-        Vector3 newScale = transform.localScale;
-        newScale += percentageChange * transform.localScale;
+        Vector3 current_scale = transform.localScale;
 
-        transform.localScale = newScale;
+        transform.localScale = current_scale * change;
     }
 
     // Start is called before the first frame update
@@ -60,7 +62,7 @@ public abstract class ObjectControl : MonoBehaviour, IInteractable
         transform.position = Vector3.Lerp(transform.position, pos, 0.5f);
         if (selected == false && rend.material.color == Color.red)
         {
-            rend.material.color = colour;
+            rend.material.SetColor("_Color", Color.white);
         }
     }
 }

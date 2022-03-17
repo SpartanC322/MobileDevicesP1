@@ -6,11 +6,11 @@ interface IInteractable
 {
     GameObject gameObject { get; }
 
-    void Move(Touch t);
+    void Move(Touch touch);
 
-    void Scale(float percentageChange);
+    void Scale(float scale);
 
-    void Rotate(Vector3 v);
+    void Rotate(Quaternion rotate);
 
     void Toggle_Active();
 
