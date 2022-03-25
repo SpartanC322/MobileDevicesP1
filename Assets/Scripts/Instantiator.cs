@@ -5,6 +5,7 @@ using UnityEngine;
 public class Instantiator : MonoBehaviour
 {
     Renderer rend;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -24,6 +25,8 @@ public class Instantiator : MonoBehaviour
         manager.AddComponent<TouchManager>();
 
         ground.name = "Ground";
+        ground.layer = 1;
+        Debug.Log(ground.layer.ToString());
         rend = ground.GetComponent<Renderer>();
         rend.material.SetColor("_Color", Color.blue);
     }

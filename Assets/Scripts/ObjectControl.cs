@@ -35,10 +35,7 @@ public abstract class ObjectControl : MonoBehaviour, IInteractable
 
     public void Rotate(Quaternion rotation)
     {
-        //Quaternion start_rotation = transform.rotation;
-        //transform.rotation = rotation * start_rotation;
-
-        transform.rotation = rotation * Quaternion.identity;
+            transform.rotation = rotation * Quaternion.identity;
     }
 
     public void Scale(float change)
