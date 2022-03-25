@@ -43,6 +43,11 @@ public abstract class ObjectControl : MonoBehaviour, IInteractable
         Vector3 current_scale = transform.localScale;
 
         transform.localScale = current_scale * change;
+
+        if (transform.localScale.y < 0.5f)
+        {
+            transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+        }
     }
 
     // Start is called before the first frame update
