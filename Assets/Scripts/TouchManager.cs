@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 
 public class TouchManager : MonoBehaviour
 {
-    enum Gestures { None, Determining, Tap, DoubleTap, Drag, Rotation, Pinch, RotateCamera };
+    enum Gestures { None, Determining, Tap, Double_Tap, Drag, Rotation, Pinch, RotateCamera };
     Gestures current_gesture = Gestures.None;
     Gestures prev_gesture = Gestures.None;
 
@@ -85,7 +85,7 @@ public class TouchManager : MonoBehaviour
                 break;
 
             //Reset
-            case Gestures.DoubleTap:
+            case Gestures.Double_Tap:
 
                 SceneManager.LoadScene(SceneManager.GetActiveScene().name);
 
@@ -165,7 +165,7 @@ public class TouchManager : MonoBehaviour
                     {
                         if (Input.touches[0].tapCount == 2)
                         {
-                            return Gestures.DoubleTap;
+                            return Gestures.Double_Tap;
                         }
                         else
                         {
@@ -208,7 +208,6 @@ public class TouchManager : MonoBehaviour
 
             if (touch_first.phase == TouchPhase.Ended || touch_second.phase == TouchPhase.Ended)
             {
-                scale_total = 0;
                 rotate_total = 0;
             }
 
@@ -267,6 +266,7 @@ public class TouchManager : MonoBehaviour
 
             return Gestures.Determining;
         }
+
         //Three Touch
         else if (Input.touchCount == 3)
         {
